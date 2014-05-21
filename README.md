@@ -31,4 +31,11 @@ if you need to use some advanced features in your project, please refer to appro
 - QML plugin
 - and much more ...
 
+#####License:
+The MIT License (MIT)
 
+#####External resources:
+- [qdbf](https://code.google.com/p/qdbf/)
+- sample shapefiles from [Geofabrik](http://download.geofabrik.de/)
+- spatial data exported from [OpenStreetMap](http://openstreetmap.org/)
+- icons from [Iconfinder](http://iconfinder.com/)
