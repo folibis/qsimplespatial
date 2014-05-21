@@ -25,7 +25,7 @@ if you need to use some advanced features in your project, please refer to appro
 - Label title along the path
 - Ability to save data to shapefiles
 - Documentation
-- More projection (may be through proj.4 library)
+- More projections (may be through proj.4 library)
 - More supported formats
 - repalce QPainter with OpenGL painting system
 - QML plugin
