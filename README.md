@@ -13,10 +13,10 @@ if you need to use some advanced features in your project, please refer to appro
   * Points
   * Polylines
   * Polygons
-- QWidget as a canvas for drawing map data
-- Unlimited zoom. It is possible to define minimal/maximal zoom visible level
+- QWidget as a canvas for map data painting
+- Unlimited zoom. It is possible to define minimal/maximal zoom visible level for layer/features groups
 - Unlimited layers
-- Paint schemes. It is possible to define custom paint sceme for each layer or features group
+- Paint schemes. It is possible to define custom paint scheme for each layer or features group
 - Labels. It is possible to define custom paint sceme for each label layer or features group
 - and much more ...
 
@@ -27,8 +27,15 @@ if you need to use some advanced features in your project, please refer to appro
 - Documentation
 - More projections (may be through proj.4 library)
 - More supported formats
-- repalce QPainter with OpenGL painting system
+- OpenGL painting system instead of QPainter
 - QML plugin
 - and much more ...
 
+#####License:
+The MIT License (MIT)
 
+#####External resources:
+- [qdbf](https://code.google.com/p/qdbf/)
+- sample shapefiles from [Geofabrik](http://download.geofabrik.de/)
+- spatial data exported from [OpenStreetMap](http://openstreetmap.org/)
+- icons from [Iconfinder](http://iconfinder.com/)
