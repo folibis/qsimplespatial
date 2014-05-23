@@ -86,7 +86,7 @@ MainWindow::MainWindow(QWidget *parent) :
         return 0.05;
     });
     QPen pen5(qRgb(210,210,250));
-    pen5.setWidth(4);
+    pen5.setWidth(12);
     PaintSchemePolyline *scheme5 = new PaintSchemePolyline(pen5);
     layer5->AddScheme(scheme5);
     QPen pen51(qRgb(255,128,0));
@@ -98,9 +98,14 @@ MainWindow::MainWindow(QWidget *parent) :
         return false;
     });
     layer5->AddScheme(scheme51);
-    LabelScheme * labelScheme5 = new LabelScheme("name",QFont("Tahoma",9),QPen(qRgb(250,128,20)));
+    LabelScheme * labelScheme5 = new LabelScheme("name",QFont("Tahoma",8),QPen(qRgb(110,110,110)));
+    labelScheme5->setPosition(QSimpleSpatial::FollowPath);
+    offset.X = 0;
+    offset.Y = 4;
+    labelScheme5->setLabelOffset(offset);
     layer5->AddLabelScheme(labelScheme5);
     LabelScheme * labelScheme51 = new LabelScheme("name");
+    labelScheme51->setPosition(QSimpleSpatial::FollowPath);
     labelScheme51->SetFilterFunction([](Feature * feature) -> bool {
         QString &type = feature->GetFieldValue("type");
         if(type == "primary") return true;

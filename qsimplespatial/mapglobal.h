@@ -59,7 +59,8 @@ typedef struct SimplePoint {
 
 enum LabelPosition {
     Center,
-    Centroid
+    Centroid,
+    FollowPath
 };
 
 class Extent {

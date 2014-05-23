@@ -29,6 +29,10 @@
 
 #include "feature.h"
 #include "maprenderer.h"
+#include "polylinefeature.h"
+
+#include <QtCore/qmath.h>
+#include <QMargins>
 
 
 LabelScheme::LabelScheme() :
@@ -155,16 +159,62 @@ void LabelScheme::Draw(MapRenderer *renderer, Feature *feature)
     }
     if(!p_fieldName.isEmpty()) {
         QString name = feature->GetFieldValue(p_fieldName);
-        QSimpleSpatial::SimplePoint labelPosition = feature->getLabelPosition(p_position);
-        QSimpleSpatial::SimplePoint point = renderer->Coord2Pixel(labelPosition);
-        QRect rect = renderer->painter->fontMetrics().boundingRect(name);
-        rect.moveTo(point.X - rect.width() / 2 + p_offset.X,point.Y - rect.height() / 2 + p_offset.Y);
-        if(p_allowOverlap || !renderer->labels.intersects(rect)) {
-            renderer->painter->setPen(p_pen);
-            renderer->painter->setFont(p_font);
-            renderer->painter->drawText(rect,Qt::AlignVCenter,name);
-            if(!p_allowOverlap)
-                renderer->labels = renderer->labels.united(rect);
+        if(p_position == QSimpleSpatial::FollowPath && feature->getScheme()->getShapeType() == QSimpleSpatial::PolyLine)
+        {
+            PolylineFeature *pf = static_cast<PolylineFeature *>(feature);
+            if(pf) {
+                QVector<Points *> &array = pf->getPointsArray();
+                QPainterPath path;
+                QPointF pathpoint;
+                for(int i = 0;i < array.count();i ++) {
+                    Points *points = array[i];
+                    if(i > 0 && renderer->Coord2Point(points->x[0],points->y[0]) != pathpoint)
+                        break;
+                    pathpoint = renderer->Coord2Point(points->x[0],points->y[0]);
+                    path.moveTo(pathpoint);
+                    for(int j = 1;j < points->count;j ++) {
+                        pathpoint = renderer->Coord2Point(points->x[j],points->y[j]);
+                        path.lineTo(pathpoint);
+                    }
+                }
+                renderer->painter->setPen(p_pen);
+                renderer->painter->setFont(p_font);
+                qreal pathLength = path.length();
+                qreal textLength = renderer->painter->fontMetrics().boundingRect(name).width() * 1.5;
+                if(pathLength > textLength) {
+                    qreal length = (pathLength - textLength) / 2;
+                    for ( int i = 0; i < name.size(); i++ ) {
+                        qreal currentPos = length / pathLength;
+                        QPointF point = path.pointAtPercent(currentPos);
+                        QRect charRect = renderer->painter->fontMetrics().boundingRect(name[i]);
+                        charRect.translate(point.x(),point.y());
+                        renderer->labels = renderer->labels.united(charRect.marginsAdded(QMargins(5,5,5,5)));
+                        qreal angle = path.angleAtPercent(currentPos);
+                        angle = 360 - angle;
+                        renderer->painter->save();
+                        renderer->painter->translate(point);
+                        renderer->painter->rotate(angle);
+                        renderer->painter->drawText(QPoint(p_offset.X, p_offset.Y),QString(name[i]));
+                        renderer->painter->restore();
+                        length += charRect.width();
+                        length += p_font.pointSize() / 2;
+                    }
+                }
+            }
+        }
+        else
+        {
+            QSimpleSpatial::SimplePoint labelPosition = feature->getLabelPosition(p_position);
+            QSimpleSpatial::SimplePoint point = renderer->Coord2Pixel(labelPosition);
+            QRect rect = renderer->painter->fontMetrics().boundingRect(name);
+            rect.moveTo(point.X - rect.width() / 2 + p_offset.X,point.Y - rect.height() / 2 + p_offset.Y);
+            if(p_allowOverlap || !renderer->labels.intersects(rect)) {
+                renderer->painter->setPen(p_pen);
+                renderer->painter->setFont(p_font);
+                renderer->painter->drawText(rect,Qt::AlignVCenter,name);
+                if(!p_allowOverlap)
+                    renderer->labels = renderer->labels.united(rect);
+            }
         }
     }
 }
