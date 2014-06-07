@@ -35,7 +35,8 @@
 
 
 class Feature;
-class MapRenderer;
+class MapTranslator;
+class QPainter;
 
 class LabelScheme
 {
@@ -65,12 +66,12 @@ public:
     QSimpleSpatial::LabelPosition getPosition();
     void setPosition(QSimpleSpatial::LabelPosition position);
 
-    void SetFilterFunction(bool (* label_filter_func )(Feature *feature));
-    bool TestFilter(Feature * feature);
+    void SetFilterFunction(bool (* label_filter_func )(Feature *));
+    bool TestFilter(Feature *feature);
 
-    void setPaintFunction(bool (* label_paint_func )(MapRenderer *, Feature *, LabelScheme *));
+    void setPaintFunction(bool (* label_paint_func)(QPainter *, MapTranslator *, Feature *, LabelScheme *));
 
-    void Draw(MapRenderer *renderer, Feature *feature);
+    void Draw(MapTranslator *renderer, Feature *feature, QPainter *painter);
 
     bool isDefault();
 
@@ -84,8 +85,8 @@ protected:
     QSimpleSpatial::LabelPosition p_position;
     void init(const QString &fieldName, const QFont &font, const QPen &pen);
 
-    bool (* p_label_filter_func )(Feature * feature);
-    bool (* p_label_paint_func )(MapRenderer *, Feature *, LabelScheme *);
+    bool (* p_label_filter_func )(Feature *);
+    bool (* p_label_paint_func )(QPainter *, MapTranslator *, Feature *, LabelScheme *);
 };
 
 #endif // LABELSCHEME_H

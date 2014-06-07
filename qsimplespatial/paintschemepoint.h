@@ -48,7 +48,7 @@ public:
     QSimpleSpatial::ShapeTypes getShapeType();
     int GetSize();
     PointType getType();
-    void Draw(MapRenderer *renderer, Feature *feature);
+    void Draw(MapTranslator *renderer, Feature *feature, QPainter *painter);
 
 private:
     int p_size;

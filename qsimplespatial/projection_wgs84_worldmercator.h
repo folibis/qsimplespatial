@@ -35,15 +35,16 @@ class Projection_WGS84_WorldMercator : public Projection
 {
 public:
     Projection_WGS84_WorldMercator();
-    QSimpleSpatial::SimplePoint translate(double X, double Y);
-    void translate(int count, double *x, double *y, double *z = 0);
-    double translateLat(double lat);
-    double translateLon(double lon);
+    QSimpleSpatial::SimplePoint toCartesian(double lon, double lat);
+    void toCartesian(int count, double *lon, double *lat, double *z = 0);
+    double toCartesianLat(double lat);
+    double toCartesianLon(double lon);
+    QSimpleSpatial::SimplePoint toGeodetic(double X, double Y);
 private:
-    double merc_x (double lon);
-    double merc_y (double lat);
-    double merc_lon (double x);
-    double merc_lat (double y);
+    double lon2merc(double lon);
+    double lat2merc(double lat);
+    double merc2lon(double x);
+    double merc2lat(double y);
 };
 
 #endif // PROJECTION_WGS84_H

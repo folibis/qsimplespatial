@@ -41,40 +41,46 @@ Projection_WGS84_WorldMercator::Projection_WGS84_WorldMercator()
 {
 }
 
-QSimpleSpatial::SimplePoint Projection_WGS84_WorldMercator::translate(double X, double Y)
+QSimpleSpatial::SimplePoint Projection_WGS84_WorldMercator::toCartesian(double lon, double lat)
 {
     QSimpleSpatial::SimplePoint point;
-    point.X = merc_x(X);
-    point.Y = merc_y(Y);
+    point.X = lon2merc(lon);
+    point.Y = lat2merc(lat);
     return point;
 }
 
-void Projection_WGS84_WorldMercator::translate(int count,double *x,double *y,double *z)
+void Projection_WGS84_WorldMercator::toCartesian(int count,double *lon,double *lat,double *z)
 {
     Q_UNUSED(z)
     for(int i = 0;i < count;i ++) {
-        if(x) x[i] = merc_x(x[i]);
-        if(y) y[i] = merc_y(y[i]);
+        if(lon) lon[i] = lon2merc(lon[i]);
+        if(lat) lat[i] = lat2merc(lat[i]);
     }
 }
 
-double Projection_WGS84_WorldMercator::translateLat(double lat)
+double Projection_WGS84_WorldMercator::toCartesianLat(double lat)
 {
-    return merc_y(lat);
+    return lat2merc(lat);
 }
 
-double Projection_WGS84_WorldMercator::translateLon(double lon)
+double Projection_WGS84_WorldMercator::toCartesianLon(double lon)
 {
-    return merc_x(lon);
+    return lon2merc(lon);
 }
 
+QSimpleSpatial::SimplePoint Projection_WGS84_WorldMercator::toGeodetic(double X, double Y)
+{
+    QSimpleSpatial::SimplePoint point;
+    point.X = merc2lon(X);
+    point.Y = merc2lat(Y);
+    return point;
+}
 
-
-double Projection_WGS84_WorldMercator::merc_x (double lon) {
+double Projection_WGS84_WorldMercator::lon2merc (double lon) {
     return R_MAJOR * deg_rad (lon);
 }
 
-double Projection_WGS84_WorldMercator::merc_y (double lat) {
+double Projection_WGS84_WorldMercator::lat2merc (double lat) {
     lat = fmin (89.5, fmax (lat, -89.5));
     double phi = deg_rad(lat);
     double sinphi = sin(phi);
@@ -84,11 +90,11 @@ double Projection_WGS84_WorldMercator::merc_y (double lat) {
     return 0 - R_MAJOR * log(ts);
 }
 
-double Projection_WGS84_WorldMercator::merc_lon (double x) {
+double Projection_WGS84_WorldMercator::merc2lon (double x) {
     return rad_deg(x) / R_MAJOR;
 }
 
-double Projection_WGS84_WorldMercator::merc_lat (double y) {
+double Projection_WGS84_WorldMercator::merc2lat (double y) {
     double ts = exp ( -y / R_MAJOR);
     double phi = M_PI_2 - 2 * atan(ts);
     double dphi = 1.0;

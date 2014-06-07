@@ -45,10 +45,11 @@ class Projection
 {
 public:
     Projection();
-    virtual QSimpleSpatial::SimplePoint translate(double X, double Y) = 0;
-    virtual void translate(int count, double *x, double *y, double *z = 0) = 0;
-    virtual double translateLat(double point) = 0;
-    virtual double translateLon(double point) = 0;
+    virtual QSimpleSpatial::SimplePoint toCartesian(double X, double Y) = 0;
+    virtual void toCartesian(int count, double *x, double *y, double *z = 0) = 0;
+    virtual double toCartesianLat(double point) = 0;
+    virtual double toCartesianLon(double point) = 0;
+    virtual QSimpleSpatial::SimplePoint toGeodetic(double lat, double lon) = 0;
     double deg_rad (double ang);
     double rad_deg (double ang);
 };

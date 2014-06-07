@@ -28,7 +28,7 @@
 #ifndef PAINTSCHEME_H
 #define PAINTSCHEME_H
 
-#include "maprenderer.h"
+#include "maptranslator.h"
 
 #include <QPen>
 #include <QBrush>
@@ -42,6 +42,7 @@ class PaintScheme
 public:
     PaintScheme();
     PaintScheme(const QPen &pen, const QBrush &brush);
+    virtual ~PaintScheme(){}
 
     QPen GetPen() const;
     void setPen(const QPen &pen);
@@ -53,7 +54,7 @@ public:
     void SetFilterFunction(bool (* filter_func )(Feature *feature));
     bool TestFilter(Feature * feature);
     virtual QSimpleSpatial::ShapeTypes getShapeType();
-    virtual void Draw(MapRenderer *renderer, Feature *feature) = 0;
+    virtual void Draw(MapTranslator *renderer, Feature *feature, QPainter *painter) = 0;
 
 protected:
     bool p_colorsInitialized;

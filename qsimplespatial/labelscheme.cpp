@@ -28,7 +28,7 @@
 #include "labelscheme.h"
 
 #include "feature.h"
-#include "maprenderer.h"
+#include "maptranslator.h"
 #include "polylinefeature.h"
 
 #include <QtCore/qmath.h>
@@ -146,15 +146,15 @@ bool LabelScheme::TestFilter(Feature *feature)
     return p_label_filter_func(feature);
 }
 
-void LabelScheme::setPaintFunction(bool (*label_paint_func)(MapRenderer *, Feature *, LabelScheme *))
+void LabelScheme::setPaintFunction(bool (*label_paint_func) (QPainter *, MapTranslator *, Feature *, LabelScheme *))
 {
     p_label_paint_func = label_paint_func;
 }
 
-void LabelScheme::Draw(MapRenderer *renderer, Feature *feature)
+void LabelScheme::Draw(MapTranslator *renderer, Feature *feature, QPainter *painter)
 {
     if(p_label_paint_func) {
-        if(p_label_paint_func(renderer, feature, this))
+        if(p_label_paint_func(painter, renderer, feature, this))
             return;
     }
     if(!p_fieldName.isEmpty()) {
@@ -163,39 +163,39 @@ void LabelScheme::Draw(MapRenderer *renderer, Feature *feature)
         {
             PolylineFeature *pf = static_cast<PolylineFeature *>(feature);
             if(pf) {
-                QVector<Points *> &array = pf->getPointsArray();
+                const QVector<Points *> *array = pf->getPointsArray();
                 QPainterPath path;
                 QPointF pathpoint;
-                for(int i = 0;i < array.count();i ++) {
-                    Points *points = array[i];
-                    if(i > 0 && renderer->Coord2Point(points->x[0],points->y[0]) != pathpoint)
+                for(int i = 0;i < array->count();i ++) {
+                    Points *points = array->at(i);
+                    if(i > 0 && renderer->Coord2ScreenPoint(points->x[0],points->y[0]) != pathpoint)
                         break;
-                    pathpoint = renderer->Coord2Point(points->x[0],points->y[0]);
+                    pathpoint = renderer->Coord2ScreenPoint(points->x[0],points->y[0]);
                     path.moveTo(pathpoint);
                     for(int j = 1;j < points->count;j ++) {
-                        pathpoint = renderer->Coord2Point(points->x[j],points->y[j]);
+                        pathpoint = renderer->Coord2ScreenPoint(points->x[j],points->y[j]);
                         path.lineTo(pathpoint);
                     }
                 }
-                renderer->painter->setPen(p_pen);
-                renderer->painter->setFont(p_font);
+                painter->setPen(p_pen);
+                painter->setFont(p_font);
                 qreal pathLength = path.length();
-                qreal textLength = renderer->painter->fontMetrics().boundingRect(name).width() * 1.5;
+                qreal textLength = painter->fontMetrics().boundingRect(name).width() * 1.5;
                 if(pathLength > textLength) {
                     qreal length = (pathLength - textLength) / 2;
                     for ( int i = 0; i < name.size(); i++ ) {
                         qreal currentPos = length / pathLength;
                         QPointF point = path.pointAtPercent(currentPos);
-                        QRect charRect = renderer->painter->fontMetrics().boundingRect(name[i]);
+                        QRect charRect = painter->fontMetrics().boundingRect(name[i]);
                         charRect.translate(point.x(),point.y());
-                        renderer->labels = renderer->labels.united(charRect.marginsAdded(QMargins(5,5,5,5)));
+                        renderer->addLabelRect(charRect.marginsAdded(QMargins(5,5,5,5)));
                         qreal angle = path.angleAtPercent(currentPos);
                         angle = 360 - angle;
-                        renderer->painter->save();
-                        renderer->painter->translate(point);
-                        renderer->painter->rotate(angle);
-                        renderer->painter->drawText(QPoint(p_offset.X, p_offset.Y),QString(name[i]));
-                        renderer->painter->restore();
+                        painter->save();
+                        painter->translate(point);
+                        painter->rotate(angle);
+                        painter->drawText(QPoint(p_offset.X, p_offset.Y),QString(name[i]));
+                        painter->restore();
                         length += charRect.width();
                         length += p_font.pointSize() / 2;
                     }
@@ -205,15 +205,15 @@ void LabelScheme::Draw(MapRenderer *renderer, Feature *feature)
         else
         {
             QSimpleSpatial::SimplePoint labelPosition = feature->getLabelPosition(p_position);
-            QSimpleSpatial::SimplePoint point = renderer->Coord2Pixel(labelPosition);
-            QRect rect = renderer->painter->fontMetrics().boundingRect(name);
+            QSimpleSpatial::SimplePoint point = renderer->Coord2Screen(labelPosition);
+            QRect rect = painter->fontMetrics().boundingRect(name);
             rect.moveTo(point.X - rect.width() / 2 + p_offset.X,point.Y - rect.height() / 2 + p_offset.Y);
-            if(p_allowOverlap || !renderer->labels.intersects(rect)) {
-                renderer->painter->setPen(p_pen);
-                renderer->painter->setFont(p_font);
-                renderer->painter->drawText(rect,Qt::AlignVCenter,name);
+            if(p_allowOverlap || !renderer->isLabelIntersects(rect)) {
+                painter->setPen(p_pen);
+                painter->setFont(p_font);
+                painter->drawText(rect,Qt::AlignVCenter,name);
                 if(!p_allowOverlap)
-                    renderer->labels = renderer->labels.united(rect);
+                    renderer->addLabelRect(rect);
             }
         }
     }

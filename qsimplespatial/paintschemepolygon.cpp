@@ -28,7 +28,7 @@
 #include "paintschemepolygon.h"
 
 #include "polygonfeature.h"
-#include "maprenderer.h"
+#include "maptranslator.h"
 
 #include <QDateTime>
 
@@ -50,30 +50,30 @@ QSimpleSpatial::ShapeTypes PaintSchemePolygon::getShapeType()
     return QSimpleSpatial::Polygon;
 }
 
-void PaintSchemePolygon::Draw(MapRenderer *renderer, Feature *feature)
+void PaintSchemePolygon::Draw(MapTranslator *renderer, Feature *feature, QPainter *painter)
 {
     PolygonFeature *pf = static_cast<PolygonFeature *>(feature);
 
     double x,y,prev_x,prev_y;
-    QVector<Points *> &array = pf->getPointsArray();
+    const QVector<Points *> *array = pf->getPointsArray();
     QPainterPath outerPath;
 
     if(!p_colorsInitialized) {
         QPair<QColor,QColor> colors = getGhostColors(feature);
-        renderer->painter->setPen(colors.first);
-        renderer->painter->setBrush(colors.second);
+        painter->setPen(colors.first);
+        painter->setBrush(colors.second);
     } else {
-        renderer->painter->setPen(p_pen);
-        renderer->painter->setBrush(p_brush);
+        painter->setPen(p_pen);
+        painter->setBrush(p_brush);
     }
-    for(int i = 0;i < array.count();i ++) {
-        Points *points = array[i];
-        outerPath.moveTo(renderer->Coord2Point(points->x[0],points->y[0]));
+    for(int i = 0;i < array->count();i ++) {
+        Points *points = array->at(i);
+        outerPath.moveTo(renderer->Coord2ScreenPoint(points->x[0],points->y[0]));
         for(int j = 0;j < points->count;j ++)
         {
             x = points->x[j];
             y = points->y[j];
-            renderer->Coord2Pixel(&x,&y);
+            renderer->Coord2Screen(&x,&y);
             if(p_lineSimplified && j > 0 && qAbs(x - prev_x) <=1 && qAbs(y - prev_y) <=1)
                 continue;
             prev_x = x;
@@ -82,7 +82,7 @@ void PaintSchemePolygon::Draw(MapRenderer *renderer, Feature *feature)
         }
         outerPath.closeSubpath();
     }
-    renderer->painter->drawPath(outerPath);
+    painter->drawPath(outerPath);
 }
 
 bool PaintSchemePolygon::isLineSimplified()

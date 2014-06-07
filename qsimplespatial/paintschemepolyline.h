@@ -39,7 +39,7 @@ public:
     PaintSchemePolyline(const QPen &pen, const QBrush &brush, int width = 3);
 
     QSimpleSpatial::ShapeTypes getShapeType();
-    void Draw(MapRenderer *renderer, Feature *feature);
+    void Draw(MapTranslator *renderer, Feature *feature, QPainter *painter);
     bool isLineSimplified();
     void setLineSimplified(bool lineSimplified);
 private:

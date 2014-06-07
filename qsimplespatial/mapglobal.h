@@ -136,6 +136,29 @@ public:
         p_p2.Y = y2;
     }
 
+    void correctSize(const Extent &other)
+    {
+        if(other.IsEmpty())
+            return;
+        if(IsEmpty())
+            Copy(other);
+        else {
+            if(other.p1().X < p_p1.X)
+                p_p1.X = other.p1().X;
+            if(other.p1().Y < p_p1.Y)
+                p_p1.Y = other.p1().Y;
+            if(other.p2().X > p_p2.X)
+                p_p2.X = other.p2().X;
+            if(other.p2().Y > p_p2.Y)
+                p_p1.Y = other.p2().Y;
+        }
+    }
+    void Copy(const Extent &other)
+    {
+        p_p1 = other.p1();
+        p_p2 = other.p2();
+    }
+
     void Decrease(double percent)
     {
         double dw = ((p_p2.X - p_p1.X) * (1.0 - percent)) / 2;
@@ -161,19 +184,24 @@ public:
         p_p1.Y = p_p1.Y + Y;
         p_p2.Y = p_p2.Y + Y;
     }
-    bool IsIntersect(Extent & extent)
+    bool IsIntersect(const Extent &extent) const
     {
         SimplePoint p1 = extent.p1();
         SimplePoint p2 = extent.p2();
         if(p1.X > p_p2.X || p2.X < p_p1.X || p1.Y > p_p2.Y || p2.Y < p_p1.Y) return false;
         return true;
     }
-    bool IsEmpty()
+    bool IsIntersect(const SimplePoint &point) const
+    {
+        if(point.X > p_p2.X || point.X < p_p1.X || point.Y > p_p2.Y || point.Y < p_p1.Y) return false;
+        return true;
+    }
+    bool IsEmpty() const
     {
         return (p_p1.X == 0 && p_p2.X == 0 && p_p1.Y == 0 && p_p2.Y == 0);
     }
 
-    QRectF GetRect() {
+    QRectF GetRect() const {
         return QRectF(p_p1.X, p_p1.Y, qAbs(p_p1.X - p_p2.X), qAbs(p_p1.Y - p_p2.Y));
     }
 

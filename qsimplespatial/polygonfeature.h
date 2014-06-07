@@ -37,7 +37,7 @@ public:
     explicit PolygonFeature(Layer *parent);
     ~PolygonFeature();
     void AddPoints(Points *points);
-    QVector<Points *> &getPointsArray();
+    const QVector<Points *> *getPointsArray();
     QSimpleSpatial::Extent GetExtent() const override;
     QSimpleSpatial::SimplePoint getCentroid() const;
     QSimpleSpatial::SimplePoint getLabelPosition(QSimpleSpatial::LabelPosition position) const override;

@@ -28,7 +28,7 @@
 #include "paintschemepoint.h"
 
 #include "pointfeature.h"
-#include "maprenderer.h"
+#include "maptranslator.h"
 
 #include <QPainter>
 
@@ -75,26 +75,26 @@ PaintSchemePoint::PointType PaintSchemePoint::getType()
     return p_type;
 }
 
-void PaintSchemePoint::Draw(MapRenderer *renderer, Feature *feature)
+void PaintSchemePoint::Draw(MapTranslator *renderer, Feature *feature, QPainter *painter)
 {
     PointFeature * pf = static_cast<PointFeature *>(feature);
     if(pf) {
         if(p_type != PointTypePixmap) {
-            renderer->painter->setPen(p_pen);
-            renderer->painter->setBrush(p_brush);
+            painter->setPen(p_pen);
+            painter->setBrush(p_brush);
         }
         QSimpleSpatial::SimplePoint point = pf->getPoint();
-        QSimpleSpatial::SimplePoint pointPx = renderer->Coord2Pixel(point.X, point.Y);
+        QSimpleSpatial::SimplePoint pointPx = renderer->Coord2Screen(point.X, point.Y);
 
         switch(p_type) {
         case PointTypeCircle:
-            renderer->painter->drawEllipse(QRectF(pointPx.X, pointPx.Y, p_size, p_size));
+            painter->drawEllipse(QRectF(pointPx.X, pointPx.Y, p_size, p_size));
             break;
         case PointTypePolygon:
-            renderer->painter->drawPolygon(p_polygon.translated(pointPx.X, pointPx.Y));
+            painter->drawPolygon(p_polygon.translated(pointPx.X, pointPx.Y));
             break;
         case PointTypePixmap:
-            renderer->painter->drawPixmap(pointPx.X, pointPx.Y, p_pixmap);
+            painter->drawPixmap(pointPx.X, pointPx.Y, p_pixmap);
             break;
         default:
             break;

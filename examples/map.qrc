@@ -2,5 +2,15 @@
     <qresource prefix="/images">
         <file>star.png</file>
         <file>cell.png</file>
+        <file>addpoint.png</file>
+        <file>zoom.png</file>
+        <file>zoomin.png</file>
+        <file>zoomout.png</file>
+        <file>addlayer.png</file>
+        <file>savemap.png</file>
+        <file>point.png</file>
+        <file>polygon.png</file>
+        <file>polyline.png</file>
+        <file>mapinfo.png</file>
     </qresource>
 </RCC>

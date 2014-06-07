@@ -38,6 +38,7 @@
 PolygonFeature::PolygonFeature(Layer *parent) :
     Feature(parent)
 {
+    p_shapeType = QSimpleSpatial::Polygon;
 }
 
 PolygonFeature::~PolygonFeature()
@@ -54,11 +55,26 @@ PolygonFeature::~PolygonFeature()
 void PolygonFeature::AddPoints(Points *points)
 {
     p_points.append(points);
+    double xMin = points->x[0];
+    double yMin = points->y[0];
+    double xMax = points->x[0];
+    double yMax = points->y[0];
+    for(int i = 1; i < points->count;i ++) {
+        if(points->x[i] < xMin)
+            xMin = points->x[i];
+        else if(points->x[i] > xMax)
+            xMax = points->x[i];
+        if(points->y[i] < yMin)
+            yMin = points->y[i];
+        else if(points->y[i] > yMax)
+            yMax = points->y[i];
+    }
+    p_extent.Update(xMin,yMin,xMax,yMax);
 }
 
-QVector<Points *> &PolygonFeature::getPointsArray()
+const QVector<Points *> *PolygonFeature::getPointsArray()
 {
-    return p_points;
+    return &p_points;
 }
 
 QSimpleSpatial::Extent PolygonFeature::GetExtent() const

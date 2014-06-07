@@ -34,6 +34,7 @@ PointFeature::PointFeature(Layer *parent,
     p_coord = coord;
     p_extent.Update(p_coord,p_coord);
     p_center = p_coord;
+    p_shapeType = QSimpleSpatial::Point;
 }
 
 QSimpleSpatial::Extent PointFeature::GetExtent() const
