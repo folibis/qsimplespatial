@@ -31,6 +31,7 @@
 #include "polygonfeature.h"
 #include "polylinefeature.h"
 #include "projection.h"
+#include "layer.h"
 
 #include "qdbftable.h"
 #include "qdbfrecord.h"
@@ -89,10 +90,10 @@ Layer *ShapeMapReader::ReadFile(QString path, Projection *projection)
     qint32 pos = 50;
     ShapeFileRecordHeader recordHeader;
     Layer *fset = new Layer();
-    fileHeader.Xmin = projection->translateLon(fileHeader.Xmin);
-    fileHeader.Ymin = projection->translateLat(fileHeader.Ymin);
-    fileHeader.Xmax = projection->translateLon(fileHeader.Xmax);
-    fileHeader.Ymax = projection->translateLat(fileHeader.Ymax);
+    fileHeader.Xmin = projection->toCartesianLon(fileHeader.Xmin);
+    fileHeader.Ymin = projection->toCartesianLat(fileHeader.Ymin);
+    fileHeader.Xmax = projection->toCartesianLon(fileHeader.Xmax);
+    fileHeader.Ymax = projection->toCartesianLat(fileHeader.Ymax);
     fset->SetExtent(QSimpleSpatial::Extent(fileHeader.Xmin,
                                            fileHeader.Ymin,
                                            fileHeader.Xmax,
@@ -113,7 +114,7 @@ Layer *ShapeMapReader::ReadFile(QString path, Projection *projection)
             double X,Y;
             stream  >> X;
             stream  >> Y;
-            feature = fset->AddFeature(new PointFeature(fset,projection->translate(X,Y)));
+            feature = fset->AddFeature(new PointFeature(fset,projection->toCartesian(X,Y)));
             break;
 
         case QSimpleSpatial::Polygon:
@@ -123,13 +124,13 @@ Layer *ShapeMapReader::ReadFile(QString path, Projection *projection)
             else if(shapeType == QSimpleSpatial::PolyLine)
                 feature = new PolylineFeature(fset);
             double x1,y1,x2,y2;
-            int numParts,numPoints;
+            qint32 numParts,numPoints;
             stream  >> x1;
             stream  >> y1;
             stream  >> x2;
             stream  >> y2;
-            feature->setExtent(projection->translate(x1,y1),
-                               projection->translate(x2,y2));
+            feature->setExtent(projection->toCartesian(x1,y1),
+                               projection->toCartesian(x2,y2));
             stream  >> numParts;
             stream  >> numPoints;
             double d1,d2;
@@ -162,7 +163,7 @@ Layer *ShapeMapReader::ReadFile(QString path, Projection *projection)
                         sum += (points->x[j + 1] - points->x[j]) * (points->y[j + 1] + points->y[j]);
                     points->cw = (sum >= 0.0);
                 }
-                projection->translate(points->count,points->x,points->y);
+                projection->toCartesian(points->count,points->x,points->y);
                 feature->AddPoints(points);
 
             }

@@ -37,7 +37,7 @@ public:
     explicit PolylineFeature(Layer *parent);
     ~PolylineFeature();
     void AddPoints(Points *points);
-    QVector<Points *> &getPointsArray();
+    const QVector<Points *> *getPointsArray();
     QSimpleSpatial::Extent GetExtent() const override;
     QSimpleSpatial::SimplePoint getLabelPosition(QSimpleSpatial::LabelPosition position) const override;
 private:

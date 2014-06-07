@@ -27,10 +27,11 @@
 
 #include "paintscheme.h"
 
-#include "maprenderer.h"
+#include "maptranslator.h"
 
 #include <QColor>
 #include <QDateTime>
+
 
 PaintScheme::PaintScheme() :
     p_colorsInitialized(false),

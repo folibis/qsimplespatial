@@ -35,50 +35,58 @@ Projection_WGS84_SphericalMercator::Projection_WGS84_SphericalMercator()
 {
 }
 
-QSimpleSpatial::SimplePoint Projection_WGS84_SphericalMercator::translate(double X, double Y)
+QSimpleSpatial::SimplePoint Projection_WGS84_SphericalMercator::toCartesian(double lon, double lat)
 {
     QSimpleSpatial::SimplePoint point;
-    point.X = merc_x(X);
-    point.Y = merc_y(Y);
+    point.X = lon2merc(lon);
+    point.Y = lat2merc(lat);
     return point;
 }
 
-void Projection_WGS84_SphericalMercator::translate(int count, double *x, double *y, double *z)
+void Projection_WGS84_SphericalMercator::toCartesian(int count, double *lon, double *lat, double *z)
 {
     Q_UNUSED(z)
     for(int i = 0;i < count;i ++) {
-        if(x) x[i] = merc_x(x[i]);
-        if(y) y[i] = merc_y(y[i]);
+        if(lon) lon[i] = lon2merc(lon[i]);
+        if(lat) lat[i] = lat2merc(lat[i]);
     }
 }
 
-double Projection_WGS84_SphericalMercator::translateLat(double lat)
+double Projection_WGS84_SphericalMercator::toCartesianLat(double lat)
 {
-    return merc_y(lat);
+    return lat2merc(lat);
 }
 
-double Projection_WGS84_SphericalMercator::translateLon(double lon)
+double Projection_WGS84_SphericalMercator::toCartesianLon(double lon)
 {
-    return merc_x(lon);
+    return lon2merc(lon);
 }
 
-double Projection_WGS84_SphericalMercator::merc_x(double lon)
+QSimpleSpatial::SimplePoint Projection_WGS84_SphericalMercator::toGeodetic(double X, double Y)
+{
+    QSimpleSpatial::SimplePoint point;
+    point.X = merc2lat(X);
+    point.X = merc2lon(Y);
+    return point;
+}
+
+double Projection_WGS84_SphericalMercator::lon2merc(double lon)
 {
     return R_MAJOR * deg_rad (lon);
 }
 
-double Projection_WGS84_SphericalMercator::merc_y(double lat)
+double Projection_WGS84_SphericalMercator::lat2merc(double lat)
 {
     lat = fmin (89.5, fmax (lat, -89.5));
     return R_MAJOR * log(tan(M_PI / 4 + deg_rad(lat)/2 ));
 }
 
-double Projection_WGS84_SphericalMercator::merc_lon(double x)
+double Projection_WGS84_SphericalMercator::merc2lon(double x)
 {
     return rad_deg(x / R_MAJOR);
 }
 
-double Projection_WGS84_SphericalMercator::merc_lat(double y)
+double Projection_WGS84_SphericalMercator::merc2lat(double y)
 {
     return rad_deg(2 * atan(exp( (y / R_MAJOR ) )) - M_PI/2);
 }

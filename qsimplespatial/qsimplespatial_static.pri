@@ -3,10 +3,9 @@ INCLUDEPATH += $$PWD
 SOURCES += \
     $$PWD/shapemapreader.cpp \
     $$PWD/pointfeature.cpp \
-    $$PWD/map.cpp \
     $$PWD/feature.cpp \
     $$PWD/mapframe.cpp \
-    $$PWD/maprenderer.cpp \
+    $$PWD/maptranslator.cpp \
     $$PWD/projection.cpp \
     $$PWD/polygonfeature.cpp \
     $$PWD/paintscheme.cpp \
@@ -24,10 +23,9 @@ HEADERS += \
     $$PWD/pointfeature.h \
     $$PWD/mapreader.h \
     $$PWD/mapglobal.h \
-    $$PWD/map.h \
     $$PWD/feature.h \
     $$PWD/mapframe.h \
-    $$PWD/maprenderer.h \
+    $$PWD/maptranslator.h \
     $$PWD/projection.h \
     $$PWD/polygonfeature.h \
     $$PWD/paintscheme.h \

@@ -27,7 +27,7 @@
 
 #include "layer.h"
 
-#include "maprenderer.h"
+#include "maptranslator.h"
 
 #include <QDebug>
 
@@ -35,6 +35,7 @@
 Layer::Layer(QObject *parent) :
     QObject(parent),
     p_visible(true),
+    p_shapeType(QSimpleSpatial::NullShape),
     p_minZoom(-1),
     p_maxZoom(-1),
     p_min_zoom_filter_func(NULL),
@@ -42,13 +43,24 @@ Layer::Layer(QObject *parent) :
 {
 }
 
+Layer::~Layer()
+{
+    qDeleteAll(p_list);
+    p_list.clear();
+    qDeleteAll(p_schemes);
+    p_schemes.clear();
+    qDeleteAll(p_labelSchemes);
+    p_labelSchemes.clear();
+}
+
+Layer::Layer(QSimpleSpatial::ShapeTypes shapeType, QObject *parent) :
+    Layer(parent)
+{
+    p_shapeType = shapeType;
+}
+
 Layer::Layer(PaintScheme *scheme, QObject *parent) :
-    QObject(parent),
-    p_visible(true),
-    p_minZoom(-1),
-    p_maxZoom(-1),
-    p_min_zoom_filter_func(NULL),
-    p_max_zoom_filter_func(NULL)
+    Layer(parent)
 {
     p_schemes.append(scheme);
 }
@@ -56,12 +68,25 @@ Layer::Layer(PaintScheme *scheme, QObject *parent) :
 Feature *Layer::AddFeature(Feature *feature)
 {
     p_list.append(feature);
+    p_extent.correctSize(feature->GetExtent());
+    setSchemeForFeature(feature);
+    setLabelSchemeForFeature(feature);
     return feature;
+}
+
+Feature *Layer::getFeature(int index)
+{
+    return p_list.at(index);
 }
 
 qint32 Layer::Count()
 {
     return p_list.count();
+}
+
+const QList<Feature *> &Layer::getFeatures()
+{
+    return p_list;
 }
 
 void Layer::AddScheme(PaintScheme *scheme)
@@ -80,11 +105,6 @@ void Layer::AddLabelScheme(LabelScheme *scheme)
     setLabelSchemeForFeatures();
 }
 
-QSimpleSpatial::Extent Layer::GetBaseExtent()
-{
-    return p_baseExtent;
-}
-
 bool Layer::isVisible()
 {
     return p_visible;
@@ -95,11 +115,19 @@ void Layer::setVisible(bool visible)
     p_visible = visible;
 }
 
+QString Layer::getName() const
+{
+    return p_name;
+}
+
+void Layer::setName(const QString &name)
+{
+    p_name = name;
+}
+
 void Layer::SetExtent(const QSimpleSpatial::Extent &extent)
 {
     p_extent = extent;
-    if(p_baseExtent.IsEmpty())
-        p_baseExtent = extent;
 }
 
 QSimpleSpatial::Extent Layer::GetExtent()
@@ -153,7 +181,7 @@ void Layer::SetMaxZoomFilter(double (*max_zoom_filter_func)(Feature *))
     setMaxZoomForFeatures();
 }
 
-void Layer::Draw(MapRenderer *renderer)
+void Layer::Draw(MapTranslator *renderer, QPainter *painter)
 {
     double currentZoom = renderer->getZoom();
     if(p_maxZoom != (-1) && p_maxZoom < currentZoom)
@@ -163,19 +191,19 @@ void Layer::Draw(MapRenderer *renderer)
     for(int i = 0;i < p_list.count();i ++) {
         Feature *feature = p_list[i];
         QSimpleSpatial::Extent extent = feature->GetExtent();
-        if(renderer->viewport.IsIntersect(extent)) {
+        if(renderer->getViewport().IsIntersect(extent)) {
             if(feature->getMaxZoom() != (-1) && feature->getMaxZoom() < currentZoom)
                 continue;
             if(feature->getMinZoom() != (-1) && feature->getMinZoom() > currentZoom)
                 continue;
             PaintScheme *scheme = feature->getScheme();
             if(scheme)
-                scheme->Draw(renderer,feature);
+                scheme->Draw(renderer,feature,painter);
         }
     }
 }
 
-void Layer::DrawLabel(MapRenderer *renderer)
+void Layer::DrawLabel(MapTranslator *renderer, QPainter *painter)
 {
     double currentZoom = renderer->getZoom();
     if(p_maxZoom != (-1) && p_maxZoom < currentZoom)
@@ -185,14 +213,14 @@ void Layer::DrawLabel(MapRenderer *renderer)
     for(int i = 0;i < p_list.count();i ++) {
         Feature *feature = p_list[i];
         QSimpleSpatial::Extent extent = feature->GetExtent();
-        if(renderer->viewport.IsIntersect(extent)) {
+        if(renderer->getViewport().IsIntersect(extent)) {
             if(feature->getMaxZoom() != (-1) && feature->getMaxZoom() < currentZoom)
                 continue;
             if(feature->getMinZoom() != (-1) && feature->getMinZoom() > currentZoom)
                 continue;
             LabelScheme *scheme = feature->getLabelScheme();
             if(scheme)
-                scheme->Draw(renderer,feature);
+                scheme->Draw(renderer,feature,painter);
         }
     }
 }
@@ -212,36 +240,47 @@ void Layer::setMinZoomForFeatures()
 void Layer::setSchemeForFeatures()
 {
     foreach(Feature *feature,p_list) {
-        PaintScheme *defaultScheme = 0;
-        bool setDefault = true;
-        for(int i = 0;i < p_schemes.count();i ++) {
-            if(p_schemes[i]->IsDefault())
-                defaultScheme = p_schemes[i];
-            else if(p_schemes[i]->TestFilter(feature)) {
-                feature->SetScheme(p_schemes[i]);
-                setDefault = false;
-            }
-        }
-        if(setDefault)
-            feature->SetScheme(defaultScheme);
+        setSchemeForFeature(feature);
     }
 }
 
 void Layer::setLabelSchemeForFeatures()
 {
     foreach(Feature *feature,p_list) {
-        LabelScheme *defaultScheme = 0;
-        bool setDefault = true;
-        for(int i = 0;i < p_labelSchemes.count();i ++) {
-            if(p_labelSchemes[i]->isDefault())
-                defaultScheme = p_labelSchemes[i];
-            else if(p_labelSchemes[i]->TestFilter(feature))
-            {
-                feature->SetLabelScheme(p_labelSchemes[i]);
-                setDefault = false;
-            }
-        }
-        if(setDefault)
-            feature->SetLabelScheme(defaultScheme);
+        setLabelSchemeForFeature(feature);
     }
 }
+
+void Layer::setSchemeForFeature(Feature *feature)
+{
+    PaintScheme *defaultScheme = 0;
+    bool setDefault = true;
+    for(int i = 0;i < p_schemes.count();i ++) {
+        if(p_schemes[i]->IsDefault())
+            defaultScheme = p_schemes[i];
+        else if(p_schemes[i]->TestFilter(feature)) {
+            feature->SetScheme(p_schemes[i]);
+            setDefault = false;
+        }
+    }
+    if(setDefault)
+        feature->SetScheme(defaultScheme);
+}
+
+void Layer::setLabelSchemeForFeature(Feature *feature)
+{
+    LabelScheme *defaultScheme = 0;
+    bool setDefault = true;
+    for(int i = 0;i < p_labelSchemes.count();i ++) {
+        if(p_labelSchemes[i]->isDefault())
+            defaultScheme = p_labelSchemes[i];
+        else if(p_labelSchemes[i]->TestFilter(feature))
+        {
+            feature->SetLabelScheme(p_labelSchemes[i]);
+            setDefault = false;
+        }
+    }
+    if(setDefault)
+        feature->SetLabelScheme(defaultScheme);
+}
+

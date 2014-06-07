@@ -1,6 +1,6 @@
 TEMPLATE = lib
 
-QT       += core gui
+QT  += core gui
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = QSimpleSpatial
@@ -8,10 +8,9 @@ TARGET = QSimpleSpatial
 SOURCES += \
     shapemapreader.cpp \
     pointfeature.cpp \
-    map.cpp \
     feature.cpp \
     mapframe.cpp \
-    maprenderer.cpp \
+    maptranslator.cpp \
     projection.cpp \
     polygonfeature.cpp \
     paintscheme.cpp \
@@ -29,10 +28,9 @@ HEADERS += \
     pointfeature.h \
     mapreader.h \
     mapglobal.h \
-    map.h \
     feature.h \
     mapframe.h \
-    maprenderer.h \
+    maptranslator.h \
     projection.h \
     polygonfeature.h \
     paintscheme.h \
@@ -43,7 +41,9 @@ HEADERS += \
     labelscheme.h \
     paintschemepolyline.h \
     projection_wgs84_worldmercator.h \
-    projection_wgs84_sphericalmercator.h
+    projection_wgs84_sphericalmercator.h \
+    mapwriter.h \
+    shapeglobal.h
 
 include(../qdbf/qdbf_static.pri)
 

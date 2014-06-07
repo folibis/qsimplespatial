@@ -55,12 +55,13 @@ class Feature
 {
 public:
     explicit Feature(Layer *parent);
+    virtual ~Feature(){}
     QSimpleSpatial::ShapeTypes ShapeType();
 
     QString &GetFieldValue(const QString &name);
 
     void AddField(const QString &name, const QString &value);
-    virtual void AddPoints(Points * points){Q_UNUSED(points)}
+    virtual void AddPoints(Points *points){Q_UNUSED(points)}
     virtual QSimpleSpatial::SimplePoint getCenter() const;
     virtual QSimpleSpatial::SimplePoint getCentroid() const;
 
@@ -70,13 +71,13 @@ public:
 
     virtual QSimpleSpatial::SimplePoint getLabelPosition(QSimpleSpatial::LabelPosition position) const;
 
-    Layer * GetLayer();
+    Layer *GetLayer();
     const DataFields &GetDataFields() const;
 
-    PaintScheme * getScheme() const;
+    PaintScheme *getScheme() const;
     void SetScheme(PaintScheme *scheme);
 
-    LabelScheme * getLabelScheme() const;
+    LabelScheme *getLabelScheme() const;
     void SetLabelScheme(LabelScheme *scheme);
 
     void setMinZoom(double zoom);
@@ -89,12 +90,12 @@ protected:
     QSimpleSpatial::SimplePoint p_center;
     QSimpleSpatial::Extent p_extent;
     DataFields p_fields;
-    LabelScheme * p_labelScheme;
-    Layer * p_layer;
+    LabelScheme *p_labelScheme;
+    Layer *p_layer;
     double p_minZoom;
     double p_maxZoom;
     QSimpleSpatial::ShapeTypes p_shapeType;
-    PaintScheme * p_scheme;
+    PaintScheme *p_scheme;
 };
 
 #endif // FEATURE_H

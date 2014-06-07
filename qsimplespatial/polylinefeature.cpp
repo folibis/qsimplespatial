@@ -38,6 +38,7 @@
 PolylineFeature::PolylineFeature(Layer *parent) :
     Feature(parent)
 {
+    p_shapeType = QSimpleSpatial::PolyLine;
 }
 
 PolylineFeature::~PolylineFeature()
@@ -54,11 +55,26 @@ PolylineFeature::~PolylineFeature()
 void PolylineFeature::AddPoints(Points *points)
 {
     p_points.append(points);
+    double xMin = points->x[0];
+    double yMin = points->y[0];
+    double xMax = points->x[0];
+    double yMax = points->y[0];
+    for(int i = 1; i < points->count;i ++) {
+        if(points->x[i] < xMin)
+            xMin = points->x[i];
+        else if(points->x[i] > xMax)
+            xMax = points->x[i];
+        if(points->y[i] < yMin)
+            yMin = points->y[i];
+        else if(points->y[i] > yMax)
+            yMax = points->y[i];
+    }
+    p_extent.Update(xMin,yMin,xMax,yMax);
 }
 
-QVector<Points *> &PolylineFeature::getPointsArray()
+const QVector<Points *> *PolylineFeature::getPointsArray()
 {
-    return p_points;
+    return &p_points;
 }
 
 QSimpleSpatial::Extent PolylineFeature::GetExtent() const
@@ -69,7 +85,7 @@ QSimpleSpatial::Extent PolylineFeature::GetExtent() const
 QSimpleSpatial::SimplePoint PolylineFeature::getLabelPosition(QSimpleSpatial::LabelPosition position) const
 {
     if(position == QSimpleSpatial::Centroid)
-            return getClosestPoint(p_center);
+        return getClosestPoint(p_center);
     return p_center;
 }
 /*
